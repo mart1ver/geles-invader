@@ -4,14 +4,10 @@
 #include <WiFiClient.h> 
 #include <ESP8266WebServer.h>
 
-int ledState = LOW;     
-
-unsigned long previousMillis = 0;
-const long interval = 1000;
 
 /* Set these to your desired credentials. */
-const char *ssid = "ESPap";
-const char *password = "thereisnospoon";
+const char *ssid = "BASE";
+const char *password = "vert";
 
 ESP8266WebServer server(80);
 
@@ -19,15 +15,20 @@ ESP8266WebServer server(80);
  * connected to this access point to see it.
  */
 void handleRoot() {
-  server.send(200, "text/html", "<h1>You are connected to the base</h1>");
+  server.send(200, "text/html", "<h1>You are connected to the base my friend</h1>");
 }
-
 void setup() {
-  pinMode(D2, OUTPUT);//sens de rotation du moteur
-  pinMode(D3, OUTPUT);// marche moteur
+  pinMode(D2, OUTPUT);// marche moteur
+  pinMode(D8, OUTPUT);// sens de rotation du moteur
+  digitalWrite(D8, HIGH);   
+  digitalWrite(D2, HIGH);  
+ 
+  
+  
   pinMode(D3, INPUT);//capteur plateau en position basse
-  pinMode(D4, INPUT);//capteur plateau en position haute
-  delay(1000);
+ pinMode(D10, INPUT);//capteur plateau en position haute
+  
+  //delay(1000);
   Serial.begin(115200);
   Serial.println();
   Serial.print("Configuring access point...");
@@ -40,27 +41,50 @@ void setup() {
   server.on("/", handleRoot);
   server.begin();
   Serial.println("HTTP server started");
-  server.on("/pose", [](){
-    server.send(200, "text/html", "OK! on pose le vaisseau!.");
-   
-  });
 
 
-    server.on("/décole", [](){
-    server.send(200, "text/html", "OK! on decole le vaisseau!.");
-   
-  });
+  
+  server.on("/decole", [](){
+       server.send(200, "text/html", "OK! on decole le vaisseau!.");  
+       digitalWrite(D8, LOW);   
+       digitalWrite(D2, HIGH);
+       while(digitalRead(D10) == 0){
+        delay(60);
+        }                 
+       digitalWrite(D8, HIGH);   
+       //digitalWrite(D2, HIGH);   
+
+    });
+
+
+
+
+
+
+    server.on("/pose", [](){
+      server.send(200, "text/html", "OK! on pose le vaisseau!."); 
+     digitalWrite(D8, LOW);   
+    digitalWrite(D2, LOW);
+    while(digitalRead(D3) == 0){
+    delay(60);
+    }          
+    digitalWrite(D8, HIGH);   
+    //digitalWrite(D2, HIGH);  
+      
+    });
+
+
+
+    
 }
 
+
+
+
+
 void loop() {
+ 
+  
   server.handleClient();
-    unsigned long currentMillis = millis();
-  if(currentMillis - previousMillis >= interval) {
-    previousMillis = currentMillis;   
-    if (ledState == LOW)
-      ledState = HIGH;  // Note that this switches the LED *off*
-    else
-      ledState = LOW;   // Note that this switches the LED *on*
-    digitalWrite(D2, ledState);
-  }
+  
 }
